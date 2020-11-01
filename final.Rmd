@@ -6,6 +6,12 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# members:
+Aishwarya Anuraj aa4517,
+Michelle Lee mjl2241,
+Julián Ponce jp3999, 
+Adarsh Ramakrishnan ar4040, 
+Allison Stewart als2377
 
 ## The tentative project title
 Traveling trends in NYC as a Result of Covid-19 
@@ -17,6 +23,7 @@ This project is important as it will allow us to better understand how Covid-19 
 Ggplot and map to visualize mobility trends as well as summary tables. 
 
 ## The anticipated data sources
+https://covid19.apple.com/mobility
 https://opendata.cityofnewyork.us/data/
 https://a816-health.nyc.gov/hdi/epiquery/
 https://www.gstatic.com/covid19/mobility/2020-10-23_US_New_York_Mobility_Report_en.pdf

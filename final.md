@@ -1,6 +1,12 @@
 Final Project Proposal
 ================
 
+members:
+========
+
+Aishwarya Anuraj aa4517, Michelle Lee mjl2241, Julián Ponce jp3999,
+Adarsh Ramakrishnan ar4040, Allison Stewart als2377
+
 The tentative project title
 ---------------------------
 
@@ -25,6 +31,7 @@ Ggplot and map to visualize mobility trends as well as summary tables.
 The anticipated data sources
 ----------------------------
 
+<a href="https://covid19.apple.com/mobility" class="uri">https://covid19.apple.com/mobility</a>
 <a href="https://opendata.cityofnewyork.us/data/" class="uri">https://opendata.cityofnewyork.us/data/</a>
 <a href="https://a816-health.nyc.gov/hdi/epiquery/" class="uri">https://a816-health.nyc.gov/hdi/epiquery/</a>
 <a href="https://www.gstatic.com/covid19/mobility/2020-10-23_US_New_York_Mobility_Report_en.pdf" class="uri">https://www.gstatic.com/covid19/mobility/2020-10-23_US_New_York_Mobility_Report_en.pdf</a>
