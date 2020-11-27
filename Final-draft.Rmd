@@ -1,0 +1,72 @@
+---
+title: "Examining the MTA ridership between 2019 and 2020"
+output: github_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library (patchwork)
+library(readr)
+library(broom)
+library(dbplyr)
+library(viridis)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+link to project rubric: https://p8105.com/final_project.html
+### Project Title
+
+### Members:
+Aishwarya Anuraj aa4517,
+Michelle Lee mjl2241,
+Julián Ponce jp3999, 
+Adarsh Ramakrishnan ar4040, 
+Allison Stewart als2377
+
+### About the Data: 
+mta: https://new.mta.info/coronavirus/ridership
+
+``` {r importing data}
+mta_data = read_csv (file = "./data/MTA_recent_ridership_data_20201123_0.csv",
+                     col_types = cols(
+                       date = col_date(format = "%mm/%dd/%yy"),
+                       `Subways: % Change From 2019 Equivalent Day` = col_number(),
+                       `Buses: % Change From 2019 Equivalent Day` = col_number(),
+                       `Bridges and Tunnels: % Change From 2019 Equivalent Day` = col_number()
+                       ) #only changed the formats of important variables 
+) %>%
+  janitor::clean_names()
+skimr::skim(mta_data)
+
+mta_data %>%
+  mutate( #calcuate actual ridership for 2019 subway, bus, and traffic
+    subways_percent_change_from_2019_equivalent_day = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
+    buses_percent_change_from_2019_equivalent_day 
+    ) %>%
+  rename(
+    "2020_subway" = subways_total_estimated_ridership,
+    "2019_subway" = subways_percent_change_from_2019_equivalent_day)
+```
+Todo: 
+1. need to change the date to date format to sort by date
+2. create a function to find the true ridership for 2019 subway, bus 
+(notes from michelle: should we include traffic?)
+``` {r pct function} 
+
+```
