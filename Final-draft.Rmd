@@ -53,20 +53,34 @@ mta_data = read_csv (file = "./data/MTA_recent_ridership_data_20201123_0.csv",
 ) %>%
   janitor::clean_names()
 skimr::skim(mta_data)
+mta_data =
+  mta_data %>%
+  subset(select = -c(lirr_total_estimated_ridership, lirr_percent_change_from_2019_monthly_weekday_saturday_sunday_average, metro_north_total_estimated_ridership, metro_north_percent_change_from_2019_monthly_weekday_saturday_sunday_average, access_a_ride_total_scheduled_trips, access_a_ride_percent_change_from_2019_monthly_weekday_saturday_sunday_average))
+#exclude data for lirr, metronorth, accessaride 
+```
+Now we will calculate the actual 2019 ridership based on the percent change data
 
+``` {r calculate 2019 ridership bus subway traffic}
 mta_data %>%
-  mutate( #calcuate actual ridership for 2019 subway, bus, and traffic
+  mutate( 
     subways_percent_change_from_2019_equivalent_day = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
-    buses_percent_change_from_2019_equivalent_day 
+    buses_percent_change_from_2019_equivalent_day =
+      buses_total_estimated_ridership/(1+(buses_percent_change_from_2019_equivalent_day/100)),
+    bridges_and_tunnels_percent_change_from_2019_equivalent_day =
+      bridges_and_tunnels_total_traffic/(1+bridges_and_tunnels_percent_change_from_2019_equivalent_day/100)
     ) %>%
   rename(
     "2020_subway" = subways_total_estimated_ridership,
-    "2019_subway" = subways_percent_change_from_2019_equivalent_day)
+    "2019_subway" = subways_percent_change_from_2019_equivalent_day,
+    "2020_bus" = buses_total_estimated_ridership,
+    "2019_bus" = buses_percent_change_from_2019_equivalent_day,
+    "2020_traffic" = bridges_and_tunnels_total_traffic,
+    "2019_traffic" = bridges_and_tunnels_percent_change_from_2019_equivalent_day
+    )
 ```
 Todo: 
 1. need to change the date to date format to sort by date
 2. create a function to find the true ridership for 2019 subway, bus 
 (notes from michelle: should we include traffic?)
 ``` {r pct function} 
-
 ```
