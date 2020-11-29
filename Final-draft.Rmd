@@ -63,15 +63,15 @@ Now we will calculate the actual 2019 ridership based on the percent change data
 ``` {r calculate 2019 ridership bus subway traffic}
 mta_data %>%
   mutate( 
-    subways_percent_change_from_2019_equivalent_day = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
-    buses_percent_change_from_2019_equivalent_day =
+    '2019_subway' = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
+    '2019_bus'=
       buses_total_estimated_ridership/(1+(buses_percent_change_from_2019_equivalent_day/100))
     ) %>%
   rename(
     "2020_subway" = subways_total_estimated_ridership,
-    "2019_subway" = subways_percent_change_from_2019_equivalent_day,
+    "subway_pct_change" = subways_percent_change_from_2019_equivalent_day,
     "2020_bus" = buses_total_estimated_ridership,
-    "2019_bus" = buses_percent_change_from_2019_equivalent_day
+    "bus_pct_change" = buses_percent_change_from_2019_equivalent_day
     )
 ```
 Todo: 
