@@ -74,34 +74,159 @@ Now we will calculate the actual 2019 ridership based on the percent
 change data
 
 ``` r
-mta_data %>%
+mta_data = mta_data %>%
   mutate( 
-    '2019_subway' = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
-    '2019_bus'=
+    'subway_2019' = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
+    'bus_2019'=
       buses_total_estimated_ridership/(1+(buses_percent_change_from_2019_equivalent_day/100))
     ) %>%
   rename(
-    "2020_subway" = subways_total_estimated_ridership,
+    "subway_2020" = subways_total_estimated_ridership,
     "subway_pct_change" = subways_percent_change_from_2019_equivalent_day,
-    "2020_bus" = buses_total_estimated_ridership,
+    "bus_2020" = buses_total_estimated_ridership,
     "bus_pct_change" = buses_percent_change_from_2019_equivalent_day
     )
 ```
 
-    ## # A tibble: 268 x 7
-    ##    date  `2020_subway` subway_pct_chan… `2020_bus` bus_pct_change `2019_subway`
-    ##    <chr>         <dbl>            <dbl>      <dbl>          <dbl>         <dbl>
-    ##  1 11/2…       1641253            -71.3     930655            -59      5718652.
-    ##  2 11/2…        816461            -63.8     536678            -42      2255417.
-    ##  3 11/2…       1157063            -63.7     743813            -45      3187501.
-    ##  4 11/2…       1802844            -68.9    1060041            -52      5796926.
-    ##  5 11/1…       1760491            -70.7    1052172            -55      6008502.
-    ##  6 11/1…       1790760            -69.8    1069304            -54      5929669.
-    ##  7 11/1…       1792119            -69.6    1091406            -53      5895128.
-    ##  8 11/1…       1745086            -68.9    1050451            -52      5611209.
-    ##  9 11/1…        821525            -66.3     524187            -48      2437760.
-    ## 10 11/1…       1215461            -62.4     755379            -43      3232609.
-    ## # … with 258 more rows, and 1 more variable: `2019_bus` <dbl>
+Let us first look at the average ridership during 2019 and 2020 for each
+month
 
-Todo: 1. need to change the date to date format to sort by date 2.
-statistical testing
+``` r
+mta_ridership = mta_data%>%
+  separate(date, into = c("month", "day", "year"))%>%
+  mutate(month = as.numeric(month))%>%
+  group_by(month)%>%
+  summarize(
+    avg_subway_2019 = mean(subway_2019),
+    avg_subway_2020 = mean(subway_2020)
+  )
+```
+
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
+mta_ridership%>%knitr::kable()
+```
+
+| month | avg\_subway\_2019 | avg\_subway\_2020 |
+| ----: | ----------------: | ----------------: |
+|     3 |           4746353 |         2381477.6 |
+|     4 |           4873551 |          391671.7 |
+|     5 |           4682924 |          493526.1 |
+|     6 |           4883863 |          798982.6 |
+|     7 |           4516652 |         1050498.6 |
+|     8 |           4343573 |         1137601.2 |
+|     9 |           4886223 |         1428918.6 |
+|    10 |           4964620 |         1549459.3 |
+|    11 |           4879758 |         1522150.0 |
+
+Let us now compare 2019 and 2020 ridership by month and check if they
+are significantly different.
+
+First we need to create our dataframe that nests the observations for
+2019 and 2020 subway ridership for each month.
+
+``` r
+mta_2019_sample = 
+  mta_data%>%
+  separate(date, into = c("month", "day", "year"))%>%
+  mutate(month = as.numeric(month))%>%
+  select(month, subway_2019)%>%
+  nest(subway_2019)%>%
+  mutate("subway_2019_sample" = data)%>%
+  select(-data)
+
+mta_2020_sample = 
+  mta_data%>%
+  separate(date, into = c("month", "day", "year"))%>%
+  mutate(month = as.numeric(month))%>%
+  select(month, subway_2020)%>%
+  nest(subway_2020)%>%
+  mutate("subway_2020_sample" = data)%>%
+  select(-data)
+
+mta_samples = 
+  bind_cols(mta_2019_sample, mta_2020_sample)%>%
+  select(-month...3)%>%
+  rename(month = month...1)
+```
+
+    ## New names:
+    ## * month -> month...1
+    ## * month -> month...3
+
+Now we need to perform a t-test to check if the ridership is
+signficantly different between 2019 and 2020 data. We map across each
+month to test if the values of the samples of 2019 and 2020 ridership
+data differs for each month. We then compare the p-value obtained from
+the tests to determine whether the differene in ridership numbers is
+significant or not
+
+``` r
+mta_t_test = mta_samples%>%
+  mutate(t_test = map2(.x = subway_2019_sample, .y = subway_2020_sample, ~t.test(.x , .y) ),
+         t_test_results = map(t_test, broom::tidy))%>%
+  select(month, t_test_results)%>%
+  unnest(t_test_results)%>%
+  select(month,p.value)%>%
+  mutate(difference = case_when(
+   
+    p.value >= 0.05 ~ "insignificant",
+    p.value < 0.05 ~ "significant"
+    
+  ))%>%
+  arrange(month)
+
+mta_t_test%>%
+  knitr::kable()
+```
+
+| month | p.value | difference  |
+| ----: | ------: | :---------- |
+|     3 |   9e-07 | significant |
+|     4 |   0e+00 | significant |
+|     5 |   0e+00 | significant |
+|     6 |   0e+00 | significant |
+|     7 |   0e+00 | significant |
+|     8 |   0e+00 | significant |
+|     9 |   0e+00 | significant |
+|    10 |   0e+00 | significant |
+|    11 |   0e+00 | significant |
+
+We can merge the t-test results with the average riderships from
+before..
+
+``` r
+mta_year_ttest = 
+  
+  bind_cols(mta_ridership, mta_t_test)%>%
+  select(-month...4)%>%
+  rename(month = month...1)
+```
+
+    ## New names:
+    ## * month -> month...1
+    ## * month -> month...4
+
+``` r
+mta_year_ttest%>%knitr::kable()
+```
+
+| month | avg\_subway\_2019 | avg\_subway\_2020 | p.value | difference  |
+| ----: | ----------------: | ----------------: | ------: | :---------- |
+|     3 |           4746353 |         2381477.6 |   9e-07 | significant |
+|     4 |           4873551 |          391671.7 |   0e+00 | significant |
+|     5 |           4682924 |          493526.1 |   0e+00 | significant |
+|     6 |           4883863 |          798982.6 |   0e+00 | significant |
+|     7 |           4516652 |         1050498.6 |   0e+00 | significant |
+|     8 |           4343573 |         1137601.2 |   0e+00 | significant |
+|     9 |           4886223 |         1428918.6 |   0e+00 | significant |
+|    10 |           4964620 |         1549459.3 |   0e+00 | significant |
+|    11 |           4879758 |         1522150.0 |   0e+00 | significant |
+
+Using this final dataframe, we can plot a graph showing the average
+ridership for each month comparing the 2019 to 2020 ridership and then
+labelling the signficance or lack of significance in ridership
+differences..
+
+\[Plot needs to be created\]
