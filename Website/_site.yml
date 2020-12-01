@@ -5,8 +5,8 @@ navbar:
   right:
     - text: "About"
       href: about.html
-    - text: "Plotly"
-      href: plotly.html
+    - text: "Results"
+      href: Results.html
     - icon: fa-envelope fa-lg
       href: mailto:<julian9529@berkeley.edu>
     - icon: fa-github fa-lg
