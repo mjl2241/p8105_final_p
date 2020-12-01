@@ -21,7 +21,7 @@ This project is important as it will allow us to better understand how Covid-19 
 
 ### Contributors, link websites?
 
-* Julián Ponce
+* __Julián Ponce__
 * Michelle Lee
 * Adarsh Ramakrishnan
 * Ally Stewart
