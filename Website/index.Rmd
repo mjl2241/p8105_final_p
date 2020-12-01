@@ -6,7 +6,7 @@ output:
     theme: flatly
 ---
 
-### Traveling trends in NYC as a Result of Covid-19
+### COVID-19 Mobility Trends in NYC: An Exploration of the Impact of the COVID-19 Pandemic on Mobility as Measured by MTA Ridership 
 
 
 ![](images/subway_nyc.jpeg)
