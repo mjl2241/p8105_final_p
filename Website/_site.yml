@@ -5,6 +5,10 @@ navbar:
   right:
     - text: "About"
       href: about.html
+    - text: "Methods"
+      href: methods.html
+    - text: "Visualizations"
+      href: Visualizations.html
     - text: "Results"
       href: Results.html
     - icon: fa-envelope fa-lg
@@ -13,4 +17,4 @@ navbar:
       href: http://github.com/julian9529/
 output:
   html_document:
-    theme: cerulean
+    theme: flatly

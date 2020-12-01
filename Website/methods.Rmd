@@ -1,0 +1,11 @@
+---
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+---
+
+# This page includes information about our project
+
+
