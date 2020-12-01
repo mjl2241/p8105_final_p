@@ -3,18 +3,31 @@ output:
   html_document:
     toc: true
     toc_float: true
-    theme: cerulean
+    theme: flatly
 ---
 
-# This is Julian's awesome website. 
+### Traveling trends in NYC as a Result of Covid-19
 
-![](https://media.giphy.com/media/drXGoW1iudhKw/giphy.gif)
 
-## Here is a subsection 
+![](images/subway_nyc.jpeg)
+
+## Project Motivation 
+This project is important as it will allow us to better understand how Covid-19 has impacted mobility trends in NYC. Mobility trends may be associated with both covid-19 infection and economic implications associated with consumer spending. Thus, understanding mobility trends is crucial in order to guide policymakers, transit, and health departments as they make decisions related to stay at home orders in light of covid-19. 
+
+## Screencast Introduction
+
+## Data
+
+
+### Contributors, link websites?
+
+* Julián Ponce
+* Michelle Lee
+* Adarsh Ramakrishnan
+* Ally Stewart
+* Aishwarya Anuraj
+
 Let's link to useful tools for data science: 
 
 * [google](https://www.google.com/)
 
-## Local Image
-
-![](images/xolo.jpg)
