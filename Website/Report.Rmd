@@ -6,7 +6,7 @@ output:
     theme: flatly
 ---
 
-# __About__
+# __Report__
 
 
 ### Motivation
@@ -26,8 +26,15 @@ Mobility trends may be associated with both COVID-19 infection and economic impl
 * How does MTA subway ridership March-December 2019 differ from MTA subway ridership March-December 2020? 
 * How has subway ridership differed from bus ridership during the pandemic (March to December 2020)? 
 
+### Data
 
-### Screencast 
+
+### Exploratory Analysis 
+
+### Additional Analysis 
+
+### Discussion 
+
 
 
 

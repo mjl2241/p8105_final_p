@@ -1,0 +1,18 @@
+---
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    code_folding: hide
+---
+
+# Analysis {.tabset .tabset-fade}
+
+
+## 2019 vs. 2020 Ridership: Two-Sample T-Test
+
+## 2020 Subway Ridership vs. 2020 Bus Ridership: Two-Sample T-test
+
+## Time-Trend Regression
+

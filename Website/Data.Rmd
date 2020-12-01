@@ -20,13 +20,13 @@ The dataset was downloaded as a .csv files and imported into RStudio. We then cl
 The dataset was downloaded as a .csv files and imported into RStudio. We then cleaned the variables names, verified that there were no missing values, and excluded the variables on the Long Island Rail Road, Metro-North Railroad, Access-A-Ride, and Bridges and Tunnels, which we did not plan to include in further data visualization and analysis. 
 
 ```{r}
-## data cleaning code 
+## add data cleaning code 
 ```
 
 Next, we calculated the 2019 ridership estimates for subway and buses based on the 2020 estimates and percentage change data. 
 
 ```{r}
-## data cleaning code 
+## add data cleaning code 
 ```
 
 

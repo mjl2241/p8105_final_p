@@ -5,16 +5,21 @@ navbar:
   right:
     - text: "About"
       href: about.html
-    - text: "Methods"
-      href: methods.html
-    - text: "Visualizations"
-      href: Visualizations.html
-    - text: "Results"
-      href: Results.html
-    - icon: fa-envelope fa-lg
-      href: mailto:<julian9529@berkeley.edu>
+    - text: "Data"
+      href: Data.html
+    - text: "Analysis"
+      menu: 
+          - text: "Ridership 2019 vs. 2020"
+          - href: Analysis1.html
+          - text: "Subway vs. Bus Ridership 2020"
+          - href: Analysis2.html
+          - text: "Time-Trend Regression"
+    - text: "Discussion and Conclusions"
+      href: Discussion and Conclusions.html
+    - text: "Report"
+      href: Report.html
     - icon: fa-github fa-lg
-      href: http://github.com/julian9529/
+      href: https://github.com/mjl2241/p8105_final_p
 output:
   html_document:
     theme: flatly
