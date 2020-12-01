@@ -1,0 +1,20 @@
+---
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+---
+
+# This is Julian's awesome website. 
+
+![](https://media.giphy.com/media/drXGoW1iudhKw/giphy.gif)
+
+## Here is a subsection 
+Let's link to useful tools for data science: 
+
+* [google](https://www.google.com/)
+
+## Local Image
+
+![](images/xolo.jpg)

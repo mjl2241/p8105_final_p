@@ -1,19 +1,16 @@
 Final Project Proposal
 ================
 
-members:
-========
+# members:
 
 Aishwarya Anuraj aa4517, Michelle Lee mjl2241, Julián Ponce jp3999,
 Adarsh Ramakrishnan ar4040, Allison Stewart als2377
 
-The tentative project title
----------------------------
+## The tentative project title
 
 Traveling trends in NYC as a Result of Covid-19
 
-The motivation for this project
--------------------------------
+## The motivation for this project
 
 This project is important as it will allow us to better understand how
 Covid-19 has impacted mobility trends in NYC. Mobility trends may be
@@ -23,23 +20,21 @@ is crucial in order to guide policymakers, transit, and health
 departments as they make decisions related to stay at home orders in
 light of covid-19.
 
-The intended final products
----------------------------
+## The intended final products
 
 Ggplot and map to visualize mobility trends as well as summary tables.
 
-The anticipated data sources
-----------------------------
+## The anticipated data sources
 
-<a href="https://covid19.apple.com/mobility" class="uri">https://covid19.apple.com/mobility</a>
-<a href="https://opendata.cityofnewyork.us/data/" class="uri">https://opendata.cityofnewyork.us/data/</a>
-<a href="https://a816-health.nyc.gov/hdi/epiquery/" class="uri">https://a816-health.nyc.gov/hdi/epiquery/</a>
-<a href="https://www.gstatic.com/covid19/mobility/2020-10-23_US_New_York_Mobility_Report_en.pdf" class="uri">https://www.gstatic.com/covid19/mobility/2020-10-23_US_New_York_Mobility_Report_en.pdf</a>
-<a href="https://www.google.com/covid19/mobility/" class="uri">https://www.google.com/covid19/mobility/</a>
-<a href="https://ourworldindata.org/covid-mobility-trends" class="uri">https://ourworldindata.org/covid-mobility-trends</a>
+mta: <https://new.mta.info/coronavirus/ridership>
+<https://covid19.apple.com/mobility>
+<https://opendata.cityofnewyork.us/data/>
+<https://a816-health.nyc.gov/hdi/epiquery/>
+<https://www.gstatic.com/covid19/mobility/2020-10-23_US_New_York_Mobility_Report_en.pdf>
+<https://www.google.com/covid19/mobility/>
+<https://ourworldindata.org/covid-mobility-trends>
 
-The planned analyses / visualizations / coding challenges
----------------------------------------------------------
+## The planned analyses / visualizations / coding challenges
 
 We plan to conduct analyses and produce visualizations of trends in
 mobility in NYC over time and associations between mobility trends and
@@ -52,8 +47,7 @@ time and to look at how these trends differ by borough. Coding
 challenges: working with untidy data, combining datasets in a meaningful
 manner, creating maps
 
-The planned timeline
---------------------
+## The planned timeline
 
 30 minute check weekly & work collaboratively online 10/28 Meet to
 discuss project topic and outline of proposal 10/28-11/07 - team members
