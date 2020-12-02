@@ -5,11 +5,13 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library (patchwork)
+library(patchwork)
 library(readr)
 library(broom)
 library(dbplyr)
 library(viridis)
+library(reshape2)
+library(plotly)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -60,7 +62,7 @@ mta_data =
 ```
 Now we will calculate the actual 2019 ridership based on the percent change data
 
-``` {r calculate 2019 ridership bus subway traffic}
+``` {r calculate 2019 ridership bus subway}
 mta_data = mta_data %>%
   mutate( 
     'subway_2019' = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
@@ -73,42 +75,41 @@ mta_data = mta_data %>%
     "bus_2020" = buses_total_estimated_ridership,
     "bus_pct_change" = buses_percent_change_from_2019_equivalent_day
     )
+
+#separate by month and day
+mta_data = 
+  mta_data %>%
+  separate(date, into = c("month", "day", "year"))%>%
+  mutate(month = as.numeric(month),
+         day = as.numeric(day)) %>%
+  select(-c(year)) #drop year column
 ```
 
-Let us first look at the average ridership during 2019 and 2020 for each month
+Let us first look at the average ridership of subway during 2019 and 2020 for each month
 
 ```{r}
-
-mta_ridership = mta_data%>%
-  separate(date, into = c("month", "day", "year"))%>%
-  mutate(month = as.numeric(month))%>%
+mta_subway_ridership =
+  mta_data %>%
   group_by(month)%>%
   summarize(
     avg_subway_2019 = mean(subway_2019),
     avg_subway_2020 = mean(subway_2020)
   )
-
-mta_ridership%>%knitr::kable()
+mta_subway_ridership%>%knitr::kable()
 ```
-
 Let us now compare 2019 and 2020 ridership by month and check if they are significantly different.
 
 First we need to create our dataframe that nests the observations for 2019 and 2020 subway ridership for each month.
-
 ```{r}
 mta_2019_sample = 
   mta_data%>%
-  separate(date, into = c("month", "day", "year"))%>%
-  mutate(month = as.numeric(month))%>%
-  select(month, subway_2019)%>%
+  select(month, subway_2019) %>%
   nest(subway_2019)%>%
   mutate("subway_2019_sample" = data)%>%
   select(-data)
 
 mta_2020_sample = 
   mta_data%>%
-  separate(date, into = c("month", "day", "year"))%>%
-  mutate(month = as.numeric(month))%>%
   select(month, subway_2020)%>%
   nest(subway_2020)%>%
   mutate("subway_2020_sample" = data)%>%
@@ -118,11 +119,9 @@ mta_samples =
   bind_cols(mta_2019_sample, mta_2020_sample)%>%
   select(-month...3)%>%
   rename(month = month...1)
-
-  
 ```
 
-Now we need to perform a t-test to check if the ridership is signficantly different between 2019 and 2020 data. We map across each month to test if the values of the samples of 2019 and 2020 ridership data differs for each month. We then compare the p-value obtained from the tests to determine whether the differene in ridership numbers is significant or not
+Now we need to perform a t-test to check if the subway ridership is signficantly different between 2019 and 2020 data. We map across each month to test if the values of the samples of 2019 and 2020 ridership data differs for each month. We then compare the p-value obtained from the tests to determine whether the differene in ridership numbers is significant or not
 
 ```{r}
 mta_t_test = mta_samples%>%
@@ -132,27 +131,21 @@ mta_t_test = mta_samples%>%
   unnest(t_test_results)%>%
   select(month,p.value)%>%
   mutate(difference = case_when(
-   
     p.value >= 0.05 ~ "insignificant",
     p.value < 0.05 ~ "significant"
-    
   ))%>%
   arrange(month)
 
 mta_t_test%>%
   knitr::kable()
-
 ```
-
 We can merge the t-test results with the average riderships from before..
 
 ```{r}
 mta_year_ttest = 
-  
   bind_cols(mta_ridership, mta_t_test)%>%
   select(-month...4)%>%
   rename(month = month...1)
-
 mta_year_ttest%>%knitr::kable()
   
 ```
@@ -160,4 +153,31 @@ mta_year_ttest%>%knitr::kable()
 Using this final dataframe, we can plot a graph showing the average ridership for each month comparing the 2019 to 2020 ridership and then labelling the signficance or lack of significance in ridership differences..
 
 [Plot needs to be created]
+``` {r plotting}
+#create a text_label label
+text_label =
+  mta_year_ttest %>%
+  mutate(text_label = str_c("p-value: ",p.value, "\nDifference: ", difference)) %>%
+  select(month, text_label)
+#pivoting
+plot = 
+  mta_ridership %>%
+  rename(
+    "2019"=avg_subway_2019,
+    "2020"=avg_subway_2020
+  ) %>%
+  melt(., id.vars = "month") %>%
+#merge based on month 
+  merge(text_label, by = "month")
 
+#plotting
+plot %>%
+plot_ly(
+    x = ~month, y = ~value, type = "scatter", mode = "lines+markers",
+    color = ~variable, text = ~text_label) %>%
+  layout (
+    title = "Monthly Average Ridership of Subway 2019 vs 2020",
+    xaxis = list(title ="Months",range=c(3,11)),
+    yaxis = list(title="Average Ridership"))
+  
+```
