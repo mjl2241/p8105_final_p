@@ -1,5 +1,5 @@
 ---
-title: "Instacart Dashboard"
+title: "MTA ridership 2019 - 20"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -10,67 +10,172 @@ output:
 library(htmlwidgets)
 library(flexdashboard)
 library(tidyverse)
-library(p8105.datasets)
+library(plotly)
+library(patchwork)
+library(readr)
+library(broom)
+library(dbplyr)
+library(viridis)
+library(reshape2)
 library(plotly)
 
-data("instacart")
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
 
-#find popular items in baking ingredients
-instacart_popular_items = 
-  instacart %>% 
-  select (
-   aisle,order_hour_of_day, order_dow, product_name) %>%
-  filter(aisle %in% c("baking ingredients")) %>%
-  count(product_name) %>% 
-  mutate(rank = min_rank(desc(n))) %>% 
-  filter(rank < 6) %>% 
-  arrange(desc(n)) 
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
 
-instacart_pop_times = 
-  instacart %>%
-  select (
-   aisle,order_hour_of_day, order_dow, product_name) %>%
-  filter(product_name %in% c("Light Brown Sugar", "Pure Baking Soda", "Cane Sugar", "Premium Pure Cane Granulated Sugar","Organic Vanilla Extract")) %>%
-  group_by(product_name) %>%
-  count(order_hour_of_day)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
+#import data
+mta_data = read_csv (file = "./data/MTA_recent_ridership_data_20201123_0.csv",
+                     col_types = cols(
+                       date = col_date(format = "%mm/%dd/%yy"),
+                       `Subways: % Change From 2019 Equivalent Day` = col_number(),
+                       `Buses: % Change From 2019 Equivalent Day` = col_number(),
+                       `Bridges and Tunnels: % Change From 2019 Equivalent Day` = col_number()
+                       ) #only changed the formats of important variables 
+) %>%
+  janitor::clean_names()
+skimr::skim(mta_data)
+mta_data =
+  mta_data %>%
+  subset(select = -c(lirr_total_estimated_ridership, lirr_percent_change_from_2019_monthly_weekday_saturday_sunday_average, metro_north_total_estimated_ridership, metro_north_percent_change_from_2019_monthly_weekday_saturday_sunday_average, access_a_ride_total_scheduled_trips, access_a_ride_percent_change_from_2019_monthly_weekday_saturday_sunday_average, bridges_and_tunnels_total_traffic, bridges_and_tunnels_percent_change_from_2019_equivalent_day))
+#exclude data for lirr, metronorth, access-a-ride, bridges & tunnel
+#calculate 2019 ridership based on 2020 ridership
+mta_data = mta_data %>%
+  mutate( 
+    'subway_2019' = subways_total_estimated_ridership/(1+(subways_percent_change_from_2019_equivalent_day/100)),
+    'bus_2019'=
+      buses_total_estimated_ridership/(1+(buses_percent_change_from_2019_equivalent_day/100))
+    ) %>%
+  rename(
+    "subway_2020" = subways_total_estimated_ridership,
+    "subway_pct_change" = subways_percent_change_from_2019_equivalent_day,
+    "bus_2020" = buses_total_estimated_ridership,
+    "bus_pct_change" = buses_percent_change_from_2019_equivalent_day
+    )
 
-Column {data-width=550}
+#separate by month and day
+mta_data = 
+  mta_data %>%
+  separate(date, into = c("month", "day", "year"))%>%
+  mutate(month = as.numeric(month),
+         day = as.numeric(day)) %>%
+  select(-c(year)) #drop year column
+#find average subway ridership per month per year
+mta_subway_ridership =
+  mta_data %>%
+  group_by(month)%>%
+  summarize(
+    avg_subway_2019 = mean(subway_2019),
+    avg_subway_2020 = mean(subway_2020)
+  )
+
+mta_2019_sample = 
+  mta_data%>%
+  select(month, subway_2019) %>%
+  nest(subway_2019)%>%
+  mutate("subway_2019_sample" = data)%>%
+  select(-data)
+
+mta_2020_sample = 
+  mta_data%>%
+  select(month, subway_2020)%>%
+  nest(subway_2020)%>%
+  mutate("subway_2020_sample" = data)%>%
+  select(-data)
+
+mta_samples = 
+  bind_cols(mta_2019_sample, mta_2020_sample)%>%
+  select(-month...3)%>%
+  rename(month = month...1)
+#perform t-test
+mta_t_test = mta_samples%>%
+  mutate(t_test = map2(.x = subway_2019_sample, .y = subway_2020_sample, ~t.test(.x , .y) ),
+         t_test_results = map(t_test, broom::tidy))%>%
+  select(month, t_test_results)%>%
+  unnest(t_test_results)%>%
+  select(month,p.value)%>%
+  mutate(difference = case_when(
+    p.value >= 0.05 ~ "insignificant",
+    p.value < 0.05 ~ "significant"
+  ))%>%
+  arrange(month)
+
+#merge t-test with mta_ridership database
+mta_year_ttest = 
+  bind_cols(mta_ridership, mta_t_test)%>%
+  select(-month...4)%>%
+  rename(month = month...1)
+mta_year_ttest%>%knitr::kable()
+
+#plotting
+#create a text_label label
+#changed to p-values less than p<0.0001 to p<0.0001 read easily
+text_label =
+  mta_year_ttest %>%
+    mutate(
+    p.value =case_when(
+      p.value<0.0001 ~"<0.0001" 
+    )) %>%
+  mutate(text_label = str_c("p-value: ",p.value, "\nDifference: ", difference)) %>%
+  select(month, text_label)
+#pivoting
+plot = 
+  mta_ridership %>%
+  rename(
+    "2019"=avg_subway_2019,
+    "2020"=avg_subway_2020
+  ) %>%
+  melt(., id.vars = "month") %>%
+#merge based on month 
+  merge(text_label, by = "month")
+
+
+```
+Column {data-width=650}
 -----------------------------------------------------------------------
 
 ### Chart A
 
 ```{r}
-instacart_pop_times %>%
-  plot_ly(
-    x = ~order_hour_of_day, y = ~n, type = "scatter", mode = "markers",
-    color = ~product_name, title = "Popular times to order products") %>%
-    layout(legend = list(x = 0.8, y = 1)) %>%
-          layout(legend = list(font = list(size = 10)))
+plot %>%
+plot_ly(
+    x = ~month, y = ~value, type = "scatter", mode = "lines+markers",
+    color = ~variable, text = ~text_label) %>%
+  layout (
+    title = "Monthly Average Ridership of Subway 2019 vs 2020",
+    xaxis = list(title ="Months",range=c(3,11)),
+    yaxis = list(title="Average Ridership"),
+    legend = list(font = list(size = 10))
+    )
 ```
 
 
-Column {data-width=450}
+Column {data-width=350}
 -----------------------------------------------------------------------
 
 ### Chart B
 
 ```{r}
-instacart_pop_times %>%
-  plot_ly (y=~order_hour_of_day, color = ~product_name, type = "box") %>%
-    layout(xaxis = list(tickfont = list(size = 10)), 
-        yaxis = list(tickfont = list(size = 10))) %>% 
-        layout(legend = list(font = list(size = 7)))
+
 ```
 
 ### Chart C
 
 ```{r}
 
-instacart_pop_times %>%
-  plot_ly(x=~order_hour_of_day, y=~n, color = ~product_name, type ="bar") %>%
-    layout(showlegend = TRUE, legend = list(font = list(size = 7))) %>%
-    layout(legend = list(x = 0.8, y = 1))
 ```
 
 
