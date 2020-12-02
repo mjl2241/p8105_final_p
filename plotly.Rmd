@@ -51,6 +51,13 @@ mta_data = mta_data %>%
     "bus_2020" = buses_total_estimated_ridership,
     "bus_pct_change" = buses_percent_change_from_2019_equivalent_day
     )
+#change date to date format and order by date
+mta_data =
+  mta_data %>%
+  mutate(
+    date= as.Date(date,format = "%m/%d")) %>%
+  arrange(date)
+
 
 #separate by month and day
 mta_data = 
@@ -156,6 +163,34 @@ Column {data-width=350}
 ### Chart B
 
 ```{r}
+#graph for subway 
+#pivoting
+plot_subway = 
+  mta_data %>%
+  select(subway_2019, subway_2020, date) %>%
+  melt(., id.vars = "date") %>%
+#plotting
+  plot_ly(
+    x = ~date, y = ~value, type = "scatter", mode = "markers",
+    color = ~variable, text_label=~value) %>%
+  layout (
+    title = "Subway Ridership Trends 2019 - 2020",
+    xaxis = list(title ="Month/Day", tickformat = "%m/%d"), #drop year
+    yaxis = list(title="Ridership"))
+#graph for bus
+#pivoting
+plot_bus = 
+  mta_data %>%
+  select(bus_2020, bus_2019,date) %>%
+  melt(., id.vars = "date") %>% 
+#plotting
+  plot_ly(
+    x = ~date, y = ~value, type = "scatter", mode = "markers",
+    color = ~variable) %>%
+  layout (
+    title = "MTA Ridership Trends 2019 - 2020",
+    xaxis = list(title ="Month/Day", tickformat = "%m/%d"),
+    yaxis = list(title="Ridership"))
 
 ```
 
