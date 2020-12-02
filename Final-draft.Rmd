@@ -157,6 +157,10 @@ Using this final dataframe, we can plot a graph showing the average ridership fo
 #create a text_label label
 text_label =
   mta_year_ttest %>%
+    mutate(
+    p.value =case_when(
+      p.value<0.0001 ~"<0.0001" #changed to p<0.0001 to read easily
+    )) %>%
   mutate(text_label = str_c("p-value: ",p.value, "\nDifference: ", difference)) %>%
   select(month, text_label)
 #pivoting

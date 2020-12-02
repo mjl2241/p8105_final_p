@@ -1,9 +1,10 @@
 ---
-title: "MTA ridership 2019 - 20"
+title: "MTA ridership 2019 - 20 Dashboard"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
+    source: embed
 ---
 
 ```{r setup, include=FALSE, echo = FALSE}
@@ -18,26 +19,11 @@ library(dbplyr)
 library(viridis)
 library(reshape2)
 library(plotly)
-
-knitr::opts_chunk$set(
-	echo = TRUE,
-	warning = FALSE,
-	fig.width = 8, 
-  fig.height = 6,
-  out.width = "90%"
-)
-
-options(
-  ggplot2.continuous.colour = "viridis",
-  ggplot2.continuous.fill = "viridis"
-)
-
-scale_colour_discrete = scale_colour_viridis_d
-scale_fill_discrete = scale_fill_viridis_d
-
-theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
+
+```{r}
 #import data
+
 mta_data = read_csv (file = "./data/MTA_recent_ridership_data_20201123_0.csv",
                      col_types = cols(
                        date = col_date(format = "%mm/%dd/%yy"),
@@ -47,7 +33,7 @@ mta_data = read_csv (file = "./data/MTA_recent_ridership_data_20201123_0.csv",
                        ) #only changed the formats of important variables 
 ) %>%
   janitor::clean_names()
-skimr::skim(mta_data)
+
 mta_data =
   mta_data %>%
   subset(select = -c(lirr_total_estimated_ridership, lirr_percent_change_from_2019_monthly_weekday_saturday_sunday_average, metro_north_total_estimated_ridership, metro_north_percent_change_from_2019_monthly_weekday_saturday_sunday_average, access_a_ride_total_scheduled_trips, access_a_ride_percent_change_from_2019_monthly_weekday_saturday_sunday_average, bridges_and_tunnels_total_traffic, bridges_and_tunnels_percent_change_from_2019_equivalent_day))
@@ -142,8 +128,9 @@ plot =
 #merge based on month 
   merge(text_label, by = "month")
 
-
 ```
+
+
 Column {data-width=650}
 -----------------------------------------------------------------------
 
