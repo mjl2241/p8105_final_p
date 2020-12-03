@@ -86,20 +86,30 @@ mta_data =
   mutate(
     date= as.Date(date,format = "%m/%d")) %>%
   arrange(date)
+#create a text_label label
+text_label =
+  mta_data %>%
+  mutate(text_label = str_c("percent change from 2019 to 2020: ", subway_pct_change)) %>%
+  select(date, text_label)
+
 #graph for subway 
 #pivoting
 plot_subway = 
   mta_data %>%
   select(subway_2019, subway_2020, date) %>%
   melt(., id.vars = "date") %>%
-#plotting
+#merge based on month 
+  merge(text_label, by = "date") %>%
+  #plotting
   plot_ly(
     x = ~date, y = ~value, type = "scatter", mode = "markers",
-    color = ~variable, text_label=~value) %>%
+    color = ~variable, text = ~text_label) %>%
   layout (
     title = "Subway Ridership Trends 2019 - 2020",
     xaxis = list(title ="Month/Day", tickformat = "%m/%d"), #drop year
-    yaxis = list(title="Ridership"))
+    yaxis = list(title="Ridership"))  %>%
+  add_lines(x =as.Date("2020-03-01"),type = 'scatter', mode = 'lines',
+            line = list(dash="dot", color = 'red', widthh=0.5, alpha = 0.5),name = 'First laboratory confirmed COVID-19 in NYC on 3/1')
 #graph for bus
 #pivoting
 plot_bus = 
@@ -109,11 +119,13 @@ plot_bus =
 #plotting
   plot_ly(
     x = ~date, y = ~value, type = "scatter", mode = "markers",
-    color = ~variable) %>%
+    color = ~variable$p) %>%
   layout (
     title = "MTA Ridership Trends 2019 - 2020",
     xaxis = list(title ="Month/Day", tickformat = "%m/%d"),
-    yaxis = list(title="Ridership"))
+    yaxis = list(title="Ridership")) %>%
+    add_lines(x =as.Date("2020-03-01"),type = 'scatter', mode = 'lines',
+            line = list(dash="dot", color = 'red', widthh=0.5, alpha = 0.5),name = 'First laboratory confirmed COVID-19 in NYC on 3/1')
 
 #ggplot for subway
 plot_subway_2 = 
@@ -141,7 +153,8 @@ plot_bus
 plot_subway
 (plot_bus_2+plot_subway_2)
 ```
-
+#source for the first confirmed case:
+https://edition.cnn.com/2020/03/02/us/new-york-coronavirus-first-case/index.html (3/1)
 ```{r}
 #separate by month and day
 mta_data = 
