@@ -78,7 +78,6 @@ mta_data = mta_data %>%
     )
 ```
 
-
 ```{r plotting general trends of MTA ridership 2019 & 2020}
 #change date to date format and order by date
 mta_data =
@@ -151,7 +150,7 @@ ggplotly(plot_subway_2)
 #ggplot for bus
 plot_bus_2 = 
   mta_data %>%
-  select(bus_2020, bus_2019,date) %>%
+  select(bus_2019, bus_2020,date) %>%
   melt(., id.vars = "date") %>% 
   ggplot(aes(x=date, y=value, color=variable)) +
   geom_point(alpha=0.5) +
@@ -172,18 +171,17 @@ plot_subway
 #source for the vertical lines:
 https://edition.cnn.com/2020/03/02/us/new-york-coronavirus-first-case/index.html (3/1)
 https://www1.nyc.gov/site/doh/covid/covid-19-data.page
+
+Let us first look at the average ridership of subway during 2019 and 2020 for each month
 ```{r}
 #separate by month and day
 mta_data = 
   mta_data %>%
-  separate(date, into = c("month", "day", "year"))%>%
+  separate(date, into = c("year", "month", "day"))%>%
   mutate(month = as.numeric(month),
          day = as.numeric(day)) %>%
   select(-c(year)) #drop year column
-```
-Let us first look at the average ridership of subway during 2019 and 2020 for each month
 
-```{r}
 mta_subway_ridership =
   mta_data %>%
   group_by(month)%>%
@@ -228,21 +226,21 @@ mta_t_test = mta_samples%>%
   select(month,p.value)%>%
   mutate(difference = case_when(
     p.value >= 0.05 ~ "insignificant",
-    p.value < 0.05 ~ "significant"
-  ))%>%
-  arrange(month)
+    p.value < 0.05 ~ "significant"),
+    p.value = ifelse(
+    p.value< 0.001,"<0.001",round(p.value, digits = 4))) %>%
+  arrange(month) 
 
-mta_t_test%>%
-  knitr::kable()
+knitr::kable(mta_t_test, digits = 3)
 ```
 We can merge the t-test results with the average riderships from before..
 
 ```{r}
 mta_year_ttest = 
-  bind_cols(mta_ridership, mta_t_test)%>%
+  bind_cols(mta_subway_ridership, mta_t_test)%>%
   select(-month...4)%>%
-  rename(month = month...1)
-mta_year_ttest%>%knitr::kable()
+  rename(month = month...1) 
+knitr::kable(mta_year_ttest)
   
 ```
 
@@ -253,10 +251,6 @@ Using this final dataframe, we can plot a graph showing the average ridership fo
 #create a text_label label
 text_label =
   mta_year_ttest %>%
-    mutate(
-    p.value =case_when(
-      p.value<0.0001 ~"<0.0001" #changed to p<0.0001 to read easily
-    )) %>%
   mutate(text_label = str_c("p-value: ",p.value, "\nDifference: ", difference)) %>%
   select(month, text_label)
 #pivoting
@@ -279,5 +273,4 @@ plot_ly(
     title = "Monthly Average Ridership of Subway 2019 vs 2020",
     xaxis = list(title ="Months",range=c(3,11)),
     yaxis = list(title="Average Ridership"))
-  
 ```
