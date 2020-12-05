@@ -342,6 +342,7 @@ mta_data %>%
   ggplot(aes(x = pred, y = resid)) + geom_point() + 
   labs(x = "Predicted value", 
        y = "Residual")
+ggtitle("Residual vs. Predicted value of Subway 2020 Ridership Regression Model")
 ```
 
 
