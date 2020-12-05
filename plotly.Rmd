@@ -222,17 +222,27 @@ plot_ly(
 
 ### Chart 2
 ```{r}
-mta_data %>% 
-  modelr::add_predictions(subway_ridership) %>% 
-  modelr::add_residuals(subway_ridership) %>% 
-  ggplot(aes(x = pred, y = resid)) + geom_point() + 
-  labs(x = "Predicted value", 
-       y = "Residual")
+ggplot(mta_data, aes(month, bus_2020)) +
+  geom_point() +
+  stat_smooth(method = lm)+
+   xlab("Month in 2020") +
+  ylab("Bus Ridership") +
+  ggtitle("Bus Ridership 2020 Regression")
+```
+
+### Chart 3
+```{r}
+  ggplot(mta_data, aes(month, subway_2020)) +
+  geom_point() +
+  stat_smooth(method = lm)+
+   xlab("Month in 2020") +
+  ylab("Subway Ridership") +
+  ggtitle("Subway Ridership 2020 Regression")
 ```
 
 Row
 -----------------------------------------------------------------------
-### Chart 3
+### Chart 4
 ```{r}
 plot_subway %>%
   plot_ly(
@@ -247,7 +257,7 @@ plot_subway %>%
   add_lines(x =as.Date("2020-05-26"), line = list(dash="dot", color = 'red', width=0.5, alpha = 0.5),name = '200K cases in NYC on 05/26')
 ```
 
-### Chart 4
+### Chart 5
 
 ```{r}
 #plot_bus
