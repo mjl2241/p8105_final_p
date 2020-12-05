@@ -1,6 +1,8 @@
 ---
 title: "Examining the MTA ridership between 2019 and 2020"
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -80,22 +82,22 @@ mta_data = mta_data %>%
 
 ```{r plotting general trends of MTA ridership 2019 & 2020}
 #change date to date format and order by date
-mta_data =
+plot_mta =
   mta_data %>%
   mutate(
     date= as.Date(date,format = "%m/%d")) %>%
   arrange(date)
 #create a text_label label
 text_label =
-  mta_data %>%
+  plot_mta %>%
   mutate(text_label = str_c("percent change from 2019 to 2020: ", subway_pct_change)) %>%
   select(date, text_label)
 
 #graph for subway 
 #pivoting
 plot_subway = 
-  mta_data %>%
-  select(subway_2019, subway_2020, date) %>%
+  plot_mta %>%
+  select(subway_2020, subway_2019, date) %>%
   melt(., id.vars = "date") %>%
 #merge based on month 
   merge(text_label, by = "date") %>%
@@ -114,8 +116,8 @@ plot_subway =
 
 #pivoting
 plot_bus = 
-  mta_data %>%
-  select(bus_2019,bus_2020,date) %>%
+  plot_mta %>%
+  select(bus_2020,bus_2019,date) %>%
   melt(., id.vars = "date") %>% 
 #merge based on month 
   merge(text_label, by = "date") %>%
@@ -133,35 +135,39 @@ plot_bus =
 
 #ggplot for subway
 plot_subway_2 = 
-  mta_data %>%
-  select(subway_2019, subway_2020, date) %>%
+  plot_mta %>%
+  select(subway_2020, subway_2019, date) %>%
   melt(., id.vars = "date") %>%
   ggplot(aes(x=date, y=value, color=variable)) +
   geom_point(alpha=0.5) +
   geom_smooth(se = FALSE)  +
+  xlab("Month/Day") +
+  ylab("Ridership") +
+  ggtitle("Subway Ridership Trends 2019 - 2020") +
   geom_vline(xintercept=as.Date("2020-03-01"), linetype="dotted", color = 'red')+
   geom_vline(xintercept=as.Date("2020-04-07"), linetype="dotted", color = 'red')+
   geom_vline(xintercept=as.Date("2020-05-26"), linetype="dotted", color = 'red')+
   geom_text(x=as.Date("2020-03-01"), y=6100000, label ="First case", angle=90, vjust = 1.2, size=3,color='black') +
   geom_text(x=as.Date("2020-04-07"), y=6100000, label ='100K cases', angle=90, vjust = 1.2, size=3,color='black')+
   geom_text(x=as.Date("2020-05-26"), y=6100000, label ='200K cases', angle=90, vjust = 1.2, size=3,color='black')
-ggplotly(plot_subway_2)
 
 #ggplot for bus
 plot_bus_2 = 
-  mta_data %>%
-  select(bus_2019, bus_2020,date) %>%
+  plot_mta %>%
+  select(bus_2020, bus_2019,date) %>%
   melt(., id.vars = "date") %>% 
   ggplot(aes(x=date, y=value, color=variable)) +
   geom_point(alpha=0.5) +
   geom_smooth(se = FALSE) +  
+  xlab("Month/Day") +
+  ylab("Ridership") +
+  ggtitle("Bus Ridership Trends 2019 - 2020") +
   geom_vline(xintercept=as.Date("2020-03-01"), linetype="dotted", color = 'red')+
   geom_vline(xintercept=as.Date("2020-04-07"), linetype="dotted", color = 'red')+
   geom_vline(xintercept=as.Date("2020-05-26"), linetype="dotted", color = 'red')+
   geom_text(x=as.Date("2020-03-01"), y=2400000, label ="First case", angle=90, vjust = 1.2, size=3,color='black') +
   geom_text(x=as.Date("2020-04-07"), y=2400000, label ='100K cases', angle=90, vjust = 1.2, size=3,color='black')+
   geom_text(x=as.Date("2020-05-26"), y=2400000, label ='200K cases', angle=90, vjust = 1.2, size=3,color='black')
-ggplotly(plot_bus_2)
 
 #see the two graphs together:
 plot_bus
@@ -177,7 +183,8 @@ Let us first look at the average ridership of subway during 2019 and 2020 for ea
 #separate by month and day
 mta_data = 
   mta_data %>%
-  separate(date, into = c("year", "month", "day"))%>%
+  arrange(date) %>%
+  separate(date, into = c("month", "day", "year"))%>%
   mutate(month = as.numeric(month),
          day = as.numeric(day)) %>%
   select(-c(year)) #drop year column
@@ -218,7 +225,8 @@ mta_samples =
 Now we need to perform a t-test to check if the subway ridership is signficantly different between 2019 and 2020 data. We map across each month to test if the values of the samples of 2019 and 2020 ridership data differs for each month. We then compare the p-value obtained from the tests to determine whether the differene in ridership numbers is significant or not
 
 ```{r}
-mta_t_test = mta_samples%>%
+mta_t_test = 
+  mta_samples%>%
   mutate(t_test = map2(.x = subway_2019_sample, .y = subway_2020_sample, ~t.test(.x , .y) ),
          t_test_results = map(t_test, broom::tidy))%>%
   select(month, t_test_results)%>%
@@ -254,18 +262,18 @@ text_label =
   mutate(text_label = str_c("p-value: ",p.value, "\nDifference: ", difference)) %>%
   select(month, text_label)
 #pivoting
-plot = 
-  mta_ridership %>%
+plot_ttest = 
+  mta_subway_ridership %>%
   rename(
-    "2019"=avg_subway_2019,
-    "2020"=avg_subway_2020
+    "2020"=avg_subway_2020,
+    "2019"=avg_subway_2019
   ) %>%
   melt(., id.vars = "month") %>%
 #merge based on month 
   merge(text_label, by = "month")
 
 #plotting
-plot %>%
+plot_ttest %>%
 plot_ly(
     x = ~month, y = ~value, type = "scatter", mode = "lines+markers",
     color = ~variable, text = ~text_label) %>%
