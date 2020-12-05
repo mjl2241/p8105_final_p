@@ -302,7 +302,10 @@ subway_ridership %>%
 #to plot for regression line 
   ggplot(mta_data, aes(month, subway_2020)) +
   geom_point() +
-  stat_smooth(method = lm)
+  stat_smooth(method = lm)+
+   xlab("Month in 2020") +
+  ylab("Subway Ridership") +
+  ggtitle("Subway Ridership 2020 Regression")
 ```
 
 * Show a plot of model residuals against fitted values – use add_predictions and add_residuals in making this plot.
@@ -313,8 +316,9 @@ mta_data %>%
   modelr::add_residuals(subway_ridership) %>% 
   ggplot(aes(x = pred, y = resid)) + geom_point() + 
   labs(x = "Predicted value", 
-       y = "Residual")
-```
+       y = "Residual") +
+    ggtitle("Residual vs. Predicted value of Subway 2020 Ridership Regression Model")
+ ```
 
 Next, we need to propose a regression model for bus ridership in 2020.
 As the outcome (bus ridership) is continuous, we can fit a linear regression model. 
@@ -333,5 +337,8 @@ bus_ridership %>%
 #to plot for regression line
 ggplot(mta_data, aes(month, bus_2020)) +
   geom_point() +
-  stat_smooth(method = lm)
+  stat_smooth(method = lm)+
+   xlab("Month in 2020") +
+  ylab("Bus Ridership") +
+  ggtitle("Bus Ridership 2020 Regression")
 ```
