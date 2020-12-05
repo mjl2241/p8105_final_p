@@ -1,11 +1,9 @@
 ---
 title: "Examining the MTA ridership between 2019 and 2020"
 output: github_document
-editor_options: 
-  chunk_output_type: console
 ---
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(patchwork)
 library(readr)
@@ -15,14 +13,6 @@ library(viridis)
 library(reshape2)
 library(plotly)
 library(lubridate)
-
-knitr::opts_chunk$set(
-	echo = TRUE,
-	warning = FALSE,
-	fig.width = 8, 
-  fig.height = 6,
-  out.width = "90%"
-)
 
 options(
   ggplot2.continuous.colour = "viridis",
@@ -254,7 +244,6 @@ knitr::kable(mta_year_ttest)
 
 Using this final dataframe, we can plot a graph showing the average ridership for each month comparing the 2019 to 2020 ridership and then labelling the signficance or lack of significance in ridership differences..
 
-[Plot needs to be created]
 ``` {r plotting}
 #create a text_label label
 text_label =
