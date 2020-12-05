@@ -2,9 +2,10 @@
 title: "MTA ridership 2019 - 20 Dashboard"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: row
     vertical_layout: fill
     source: embed
+runtime: shiny
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -17,6 +18,7 @@ library(viridis)
 library(reshape2)
 library(plotly)
 library(lubridate)
+library(flexdashboard)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -35,9 +37,7 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
-```
 
-``` {r importing data}
 mta_data = read_csv (file = "./data/MTA_recent_ridership_data_20201123_0.csv",
                      col_types = cols(
                        date = col_date(format = "%mm/%dd/%yy"),
@@ -51,9 +51,7 @@ skimr::skim(mta_data)
 mta_data =
   mta_data %>%
   subset(select = -c(lirr_total_estimated_ridership, lirr_percent_change_from_2019_monthly_weekday_saturday_sunday_average, metro_north_total_estimated_ridership, metro_north_percent_change_from_2019_monthly_weekday_saturday_sunday_average, access_a_ride_total_scheduled_trips, access_a_ride_percent_change_from_2019_monthly_weekday_saturday_sunday_average, bridges_and_tunnels_total_traffic, bridges_and_tunnels_percent_change_from_2019_equivalent_day))
-```
 
-``` {r calculate 2019 ridership bus subway}
 mta_data = 
   mta_data %>%
   mutate( 
@@ -67,9 +65,7 @@ mta_data =
     "bus_2020" = buses_total_estimated_ridership,
     "bus_pct_change" = buses_percent_change_from_2019_equivalent_day
     )
-```
 
-```{r plotting general trends of MTA ridership 2019 & 2020}
 #change date to date format and order by date
 plot_mta =
   mta_data %>%
@@ -98,9 +94,7 @@ plot_bus =
   melt(., id.vars = "date") %>% 
 #merge based on month 
   merge(text_label, by = "date")
-```
 
-```{r}
 #setting up for t-test
 #separate by month and day
 mta_data = 
@@ -137,9 +131,7 @@ mta_samples =
   bind_cols(mta_2019_sample, mta_2020_sample)%>%
   select(-month...3)%>%
   rename(month = month...1)
-```
 
-```{r t test}
 mta_t_test = 
   mta_samples%>%
   mutate(t_test = map2(.x = subway_2019_sample, .y = subway_2020_sample, ~t.test(.x , .y) ),
@@ -158,9 +150,7 @@ mta_year_ttest =
   bind_cols(mta_subway_ridership, mta_t_test)%>%
   select(-month...4)%>%
   rename(month = month...1) 
-```
 
-``` {r plotting set up}
 #create a text_label label
 text_label =
   mta_year_ttest %>%
@@ -168,7 +158,7 @@ text_label =
   select(month, text_label)
 #pivoting
 plot_ttest = 
-  mta_ridership %>%
+  mta_subway_ridership %>%
   rename(
     "2020"=avg_subway_2020,
     "2019"=avg_subway_2019
@@ -177,13 +167,45 @@ plot_ttest =
 #merge based on month 
   merge(text_label, by = "month")
 
+subway_ridership = lm(subway_2020 ~ month, data = mta_data)
+subway_ridership %>% 
+  broom::tidy() %>% 
+  select(term, estimate, p.value) %>% 
+  knitr::kable(digits = 3)
+
+#to plot for regression line 
+#  ggplot(mta_data, aes(month, subway_2020)) +
+#  geom_point() +
+#  stat_smooth(method = lm)
+
+
+mta_data %>% 
+  modelr::add_predictions(subway_ridership) %>% 
+  modelr::add_residuals(subway_ridership) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point() + 
+  labs(x = "Predicted value", 
+       y = "Residual")
+
+bus_ridership = lm(bus_2020 ~ month, data = mta_data)
+bus_ridership %>% 
+  broom::tidy() 
+
+#Now we need to tidy the output and get only the intercept, slope and p-values 
+bus_ridership %>% 
+  broom::tidy() %>% 
+  select(term, estimate, p.value) %>% 
+  knitr::kable(digits = 3)
+
+#to plot for regression line
+#ggplot(mta_data, aes(month, bus_2020)) +
+#  geom_point() +
+#  stat_smooth(method = lm)
 ```
 
-
-Column {data-width=650}
+Row
 -----------------------------------------------------------------------
 
-### Chart A
+### Chart 1
 
 ```{r}
 plot_ttest %>%
@@ -198,12 +220,19 @@ plot_ly(
     )
 ```
 
+### Chart 2
+```{r}
+mta_data %>% 
+  modelr::add_predictions(subway_ridership) %>% 
+  modelr::add_residuals(subway_ridership) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point() + 
+  labs(x = "Predicted value", 
+       y = "Residual")
+```
 
-Column {data-width=350}
+Row
 -----------------------------------------------------------------------
-
-### Chart B
-
+### Chart 3
 ```{r}
 plot_subway %>%
   plot_ly(
@@ -218,7 +247,7 @@ plot_subway %>%
   add_lines(x =as.Date("2020-05-26"), line = list(dash="dot", color = 'red', width=0.5, alpha = 0.5),name = '200K cases in NYC on 05/26')
 ```
 
-### Chart C
+### Chart 4
 
 ```{r}
 #plot_bus
