@@ -275,7 +275,7 @@ plot_ly(
     yaxis = list(title="Average Ridership"))
 ```
 
-Let us now compare subway and bus ridership in 2020 by month and check if they are significantly different.
+Let us now look at the subway and bus ridership in 2020 by month using regression modeling.
 
 First we need to propose a regression model for subway ridership in 2020.
 As the outcome (subway ridership) is continuous, we can fit a linear regression model. 
@@ -297,7 +297,7 @@ subway_ridership %>%
   stat_smooth(method = lm)
 ```
 
-* Show a plot of model residuals against fitted values – use add_predictions and add_residuals in making this plot.
+* Now we will build a plot of model residuals against fitted values for subway ridership in 2020.
 
 ```{r}
 mta_data %>% 
@@ -308,7 +308,7 @@ mta_data %>%
        y = "Residual")
 ```
 
-Next, we need to propose a regression model for bus ridership in 2020.
+Now, we need to propose a regression model for bus ridership in 2020.
 As the outcome (bus ridership) is continuous, we can fit a linear regression model. 
 
 ```{r}
@@ -328,9 +328,16 @@ ggplot(mta_data, aes(month, bus_2020)) +
   stat_smooth(method = lm)
 ```
 
+* Next, we will build a plot of model residuals against fitted values for bus ridership in 2020.
 
-
-
+```{r}
+mta_data %>% 
+  modelr::add_predictions(bus_ridership) %>% 
+  modelr::add_residuals(bus_ridership) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point() + 
+  labs(x = "Predicted value", 
+       y = "Residual")
+```
 
 
 
